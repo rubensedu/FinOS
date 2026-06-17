@@ -62,16 +62,24 @@ body::after{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:
 .month-btn:hover{background:rgba(0,240,180,0.08);}
 .month-label{font-family:var(--mono);font-size:13px;color:var(--text);padding:0 16px;border-left:1px solid var(--border);border-right:1px solid var(--border);min-width:150px;text-align:center;letter-spacing:1px;}
 
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:2rem;}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:2rem;}
 .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;position:relative;overflow:hidden;transition:border-color .3s,transform .2s;}
 .metric-card:hover{border-color:var(--border2);transform:translateY(-2px);}
 .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--card-accent,var(--accent)),transparent);opacity:.6;}
-.mc-entrada{--card-accent:#00E096;}.mc-despesa{--card-accent:#F05060;}.mc-pago{--card-accent:#F0A030;}.mc-saldo-pos{--card-accent:#00C8F0;}.mc-saldo-neg{--card-accent:#F05060;}
+.mc-entrada{--card-accent:#00E096;}.mc-despesa{--card-accent:var(--text2);}.mc-pago{--card-accent:#00C8F0;}.mc-saldo-pos{--card-accent:#00C8F0;}.mc-saldo-neg{--card-accent:#F05060;}
+.mc-entrada .metric-value{color:var(--green);}
+.mc-despesa .metric-value{color:var(--text);}
+.mc-pago .metric-value{color:var(--accent2);}
+.mc-saldo-pos .metric-value{color:var(--green);}
+.mc-saldo-neg .metric-value{color:var(--red);}
+.mc-pendente{--card-accent:#F0A030;}.mc-pendente .metric-value{color:var(--warn);}
+.mc-previsto{--card-accent:#7B5EF8;}.mc-previsto .metric-value{color:var(--accent3);}
+.mc-saldo-prev-pos{--card-accent:#00E096;}.mc-saldo-prev-pos .metric-value{color:var(--green);}
+.mc-saldo-prev-neg{--card-accent:#F05060;}.mc-saldo-prev-neg .metric-value{color:var(--red);}
 .metric-eyebrow{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 .metric-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--card-accent,var(--accent));animation:pulse-dot 2s ease-in-out infinite;}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
 .metric-value{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);}
-.mc-entrada .metric-value{color:var(--green);}.mc-despesa .metric-value{color:var(--red);}.mc-pago .metric-value{color:var(--warn);}
 
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem;}
 .panel-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface2);}
@@ -204,6 +212,21 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* Custom Select */
+.csel{position:relative;width:100%;}
+.csel-trigger{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .2s;user-select:none;}
+.csel-trigger:hover,.csel.open .csel-trigger{border-color:var(--accent);}
+.csel-lbl{display:flex;align-items:center;gap:8px;flex:1;}
+.csel-arr{font-size:11px;color:var(--text3);transition:transform .2s,color .2s;font-family:var(--mono);}
+.csel.open .csel-arr{transform:rotate(180deg);color:var(--accent);}
+.csel-list{position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:600;display:none;box-shadow:0 16px 40px rgba(0,0,0,.65);max-height:260px;overflow-y:auto;}
+.csel-list.open{display:block;animation:csel-in .15s ease;}
+@keyframes csel-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.csel-opt{padding:9px 14px;font-size:13px;font-family:var(--sans);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,240,180,0.04);transition:background .12s,color .12s;}
+.csel-opt:last-child{border-bottom:none;}
+.csel-opt:hover{background:rgba(0,240,180,0.06);color:var(--text);}
+.csel-opt.active{color:var(--accent);}
 </style>
 </head>
 <body>
@@ -284,15 +307,17 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
   </div>
   <div class="metrics">
     <div class="metric-card mc-entrada"><div class="metric-eyebrow"><span class="dot"></span>ENTRADAS</div><div class="metric-value" id="mEntradas">R$ 0,00</div></div>
-    <div class="metric-card mc-despesa"><div class="metric-eyebrow"><span class="dot"></span>DESPESAS</div><div class="metric-value" id="mDespesas">R$ 0,00</div></div>
-    <div class="metric-card mc-pago"><div class="metric-eyebrow"><span class="dot"></span>PAGAS</div><div class="metric-value" id="mPagas">R$ 0,00</div></div>
+    <div class="metric-card mc-previsto"><div class="metric-eyebrow"><span class="dot"></span>ENTRADAS PREVISTAS</div><div class="metric-value" id="mPrevisto">R$ 0,00</div></div>
     <div class="metric-card mc-saldo-pos" id="saldoCard"><div class="metric-eyebrow"><span class="dot"></span>SALDO</div><div class="metric-value" id="mSaldo">R$ 0,00</div></div>
+    <div class="metric-card mc-saldo-prev-pos" id="saldoPrevCard"><div class="metric-eyebrow"><span class="dot"></span>SALDO PREVISTO</div><div class="metric-value" id="mSaldoPrev">R$ 0,00</div></div>
+    <div class="metric-card mc-pago"><div class="metric-eyebrow"><span class="dot"></span>PAGAS</div><div class="metric-value" id="mPagas">R$ 0,00</div></div>
+    <div class="metric-card mc-pendente"><div class="metric-eyebrow"><span class="dot"></span>PENDENTES</div><div class="metric-value" id="mPendentes">R$ 0,00</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;">
     <div>
       <div class="panel">
         <div class="panel-header"><div class="panel-title"><div class="panel-icon icon-e">↑</div>ENTRADAS</div><button class="btn-add" onclick="openModal('entrada')">+ ADICIONAR</button></div>
-        <div class="table-wrap"><table><thead><tr><th>DESCRIÇÃO</th><th>CATEGORIA</th><th>VALOR</th><th>STATUS</th><th></th></tr></thead><tbody id="tEntradas"><tr><td colspan="5" class="empty-state">// CARREGANDO...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>DESCRIÇÃO</th><th>CATEGORIA</th><th>ENTRADA PREVISTA</th><th>VALOR</th><th>STATUS</th><th></th></tr></thead><tbody id="tEntradas"><tr><td colspan="6" class="empty-state">// CARREGANDO...</td></tr></tbody></table></div>
         <div class="edit-hint">// CLIQUE DUPLO EM QUALQUER CÉLULA PARA EDITAR</div>
       </div>
       <div class="panel">
@@ -328,6 +353,7 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
     <div class="field"><label>Descrição</label><input id="fDesc" placeholder="Ex: Aluguel, Salário..." autocomplete="off"></div>
     <div class="field"><label>Categoria</label><select id="fCat"></select></div>
     <div class="field" id="fLugarWrap"><label>Lugar / Link (opcional)</label><input id="fLugar" placeholder="https://... ou nome do local"></div>
+    <div class="field" id="fValorPrevWrap"><label>Entrada Prevista (R$)</label><input id="fValorPrev" type="number" min="0" step="0.01" placeholder="Valor esperado (opcional)"></div>
     <div class="field"><label>Valor (R$)</label><input id="fValor" type="number" min="0" step="0.01" placeholder="0,00"></div>
     <div class="field"><label>Status</label><select id="fStatus"><option value="pendente">Pendente</option><option value="pago" id="statusPaid">Pago</option></select></div>
     <div class="modal-actions">
@@ -384,9 +410,10 @@ const CAT_COLORS   = {
   'Moradia':'#00C8F0','Alimentação':'#00E096','Transporte':'#F0A030',
   'Saúde':'#F05060','Educação':'#7B5EF8','Lazer':'#D4537E',
   'Tecnologia':'#00F0B4','Vestuário':'#F8A95E','Outros':'#7A9AB0',
+  'Empresa':'#F0C030','Dívidas':'#C45EF0','Mobília':'#8B6A40',
   'Salário':'#00E096','Pró-labore':'#00F0B4','Freelance':'#00C8F0','Investimentos':'#7B5EF8'
 };
-const CATS_DESPESA = ['Moradia','Alimentação','Transporte','Saúde','Educação','Lazer','Tecnologia','Vestuário','Outros'];
+const CATS_DESPESA = ['Moradia','Alimentação','Transporte','Saúde','Educação','Lazer','Tecnologia','Vestuário','Empresa','Dívidas','Mobília','Outros'];
 const CATS_ENTRADA = ['Salário','Pró-labore','Freelance','Investimentos','Outros'];
 
 /* ── STATE ── */
@@ -463,16 +490,23 @@ function setFilter(f, el) {
 
 /* ── RENDER LANÇAMENTOS ── */
 function renderLancamentos() {
+  cleanupOrphanedCsels();
   document.getElementById('monthLabel').textContent = `${MONTHS[curMonth].toUpperCase()} ${curYear}`;
   const totE = entradas.reduce((a,i)=>a+(i.status==='pago'?+i.valor:0),0);
   const totD = despesas.reduce((a,i)=>a+(+i.valor),0);
   const totP = despesas.reduce((a,i)=>a+(i.status==='pago'?+i.valor:0),0);
+  const totPend = totD - totP;
   const saldo = totE - totD;
-  document.getElementById('mEntradas').textContent = fmt(totE);
-  document.getElementById('mDespesas').textContent = fmt(totD);
-  document.getElementById('mPagas').textContent    = fmt(totP);
-  document.getElementById('mSaldo').textContent    = fmt(saldo);
-  document.getElementById('saldoCard').className   = 'metric-card ' + (saldo>=0?'mc-saldo-pos':'mc-saldo-neg');
+  const totPrev = entradas.reduce((a,i)=>a+(i.valor_previsto!=null?+i.valor_previsto:0),0);
+  const saldoPrev = totPrev - totD;
+  document.getElementById('mEntradas').textContent  = fmt(totE);
+  document.getElementById('mPagas').textContent     = fmt(totP);
+  document.getElementById('mPendentes').textContent = fmt(totPend);
+  document.getElementById('mSaldo').textContent     = fmt(saldo);
+  document.getElementById('saldoCard').className    = 'metric-card ' + (saldo>=0?'mc-saldo-pos':'mc-saldo-neg');
+  document.getElementById('mPrevisto').textContent  = fmt(totPrev);
+  document.getElementById('mSaldoPrev').textContent = fmt(saldoPrev);
+  document.getElementById('saldoPrevCard').className = 'metric-card ' + (saldoPrev>=0?'mc-saldo-prev-pos':'mc-saldo-prev-neg');
   const pct = totE>0 ? Math.min(100,Math.round(totE/(totE+totD)*100)) : 0;
   document.getElementById('saldoBar').style.width  = pct + '%';
   document.getElementById('saldoBarIn').textContent  = fmt(totE);
@@ -615,11 +649,11 @@ function startEdit(td, val, onSave, type='text') {
   td.classList.remove('editable');
   if (type==='cat_despesa'||type==='cat_entrada') {
     const cats=type==='cat_entrada'?CATS_ENTRADA:CATS_DESPESA;
-    const sel=document.createElement('select'); sel.className='cell-select';
+    const sel=document.createElement('select');
     cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;if(c===val)o.selected=true;sel.appendChild(o);});
-    td.innerHTML=''; td.appendChild(sel); sel.focus();
-    sel.addEventListener('change',()=>onSave(sel.value));
-    sel.addEventListener('blur',()=>onSave(sel.value));
+    td.innerHTML=''; td.appendChild(sel);
+    wrapSelect(sel, { onCancel: ()=>{ td.innerHTML=orig; td.classList.add('editable'); } });
+    sel.addEventListener('change', ()=>onSave(sel.value));
     return;
   }
   const inp=document.createElement('input'); inp.className='cell-input';
@@ -639,10 +673,11 @@ function startEdit(td, val, onSave, type='text') {
 /* ── RENDER TABLES ── */
 function renderEntradas() {
   const tb=document.getElementById('tEntradas');
-  if(!entradas.length){tb.innerHTML='<tr><td colspan="5" class="empty-state">// NENHUMA ENTRADA REGISTRADA</td></tr>';return;}
+  if(!entradas.length){tb.innerHTML='<tr><td colspan="6" class="empty-state">// NENHUMA ENTRADA REGISTRADA</td></tr>';return;}
   tb.innerHTML=entradas.map(it=>`<tr>
     <td class="editable" data-table="entradas" data-id="${it.id}" data-field="descricao">${it.descricao}</td>
     <td class="editable" data-table="entradas" data-id="${it.id}" data-field="categoria"><span class="cat-dot" style="background:${CAT_COLORS[it.categoria]||'#888'}"></span>${it.categoria}</td>
+    <td class="editable" data-table="entradas" data-id="${it.id}" data-field="valor_previsto" style="color:var(--text2);font-family:var(--mono)">${it.valor_previsto!=null?fmt(it.valor_previsto):'<span style="color:var(--text3)">—</span>'}</td>
     <td class="editable amount-in" data-table="entradas" data-id="${it.id}" data-field="valor">${fmt(it.valor)}</td>
     <td><span class="badge ${it.status}">${it.status==='pago'?'RECEBIDO':'PENDENTE'}</span></td>
     <td><div class="action-row">
@@ -694,6 +729,7 @@ function bindEvents(tb, table) {
       if(field==='descricao') startEdit(td,item.descricao,v=>dbUpdate(table,id,{descricao:v}));
       else if(field==='categoria') startEdit(td,item.categoria,v=>dbUpdate(table,id,{categoria:v}),table==='entradas'?'cat_entrada':'cat_despesa');
       else if(field==='valor') startEdit(td,item.valor,v=>dbUpdate(table,id,{valor:v}),'number');
+      else if(field==='valor_previsto') startEdit(td,item.valor_previsto||'',v=>dbUpdate(table,id,{valor_previsto:v}),'number');
       else if(field==='lugar') startEdit(td,item.lugar||'',v=>dbUpdate(table,id,{lugar:v}));
     });
   });
@@ -727,16 +763,98 @@ function renderCats(){
   }).join('');
 }
 
+/* ── CUSTOM SELECT ── */
+function wrapSelect(el, { onCancel } = {}) {
+  const prevWrap = el.nextElementSibling;
+  if (prevWrap?.classList.contains('csel')) prevWrap.remove();
+  if (el._cselList) { el._cselList.remove(); el._cselList = null; }
+  el.style.display = 'none';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'csel';
+  el.after(wrap);
+
+  const trigger = document.createElement('div'); trigger.className = 'csel-trigger';
+  const lbl = document.createElement('span'); lbl.className = 'csel-lbl';
+  const arr = document.createElement('span'); arr.className = 'csel-arr'; arr.textContent = '▾';
+  trigger.append(lbl, arr);
+  wrap.appendChild(trigger);
+
+  const list = document.createElement('div');
+  list.className = 'csel-list';
+  list._wrap = wrap; list._onCancel = onCancel;
+  document.body.appendChild(list);
+  el._cselList = list;
+
+  function fillContent(container, value, text) {
+    container.innerHTML = '';
+    const color = CAT_COLORS[value];
+    if (color) { const d=document.createElement('span');d.className='cat-dot';d.style.cssText=`background:${color};flex-shrink:0`;container.appendChild(d); }
+    container.appendChild(document.createTextNode(text));
+  }
+
+  function build() {
+    const cur = el.value;
+    list.innerHTML = '';
+    Array.from(el.options).forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'csel-opt' + (opt.value===cur?' active':'');
+      fillContent(item, opt.value, opt.text);
+      item.addEventListener('mousedown', e => {
+        e.preventDefault();
+        el.value = opt.value;
+        fillContent(lbl, opt.value, opt.text);
+        list.classList.remove('open'); wrap.classList.remove('open');
+        el.dispatchEvent(new Event('change'));
+      });
+      list.appendChild(item);
+    });
+    const sel = el.options[el.selectedIndex];
+    if (sel) fillContent(lbl, sel.value, sel.text);
+  }
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    if (list.classList.contains('open')) {
+      list.classList.remove('open'); wrap.classList.remove('open');
+      list._onCancel?.();
+    } else {
+      closeAllCsels(true);
+      const r = wrap.getBoundingClientRect();
+      list.style.cssText = `top:${r.bottom+4}px;left:${r.left}px;width:${r.width}px`;
+      list.classList.add('open'); wrap.classList.add('open');
+    }
+  });
+
+  build();
+}
+
+function closeAllCsels(callCancel = false) {
+  document.querySelectorAll('.csel-list.open').forEach(l => {
+    l.classList.remove('open'); l._wrap?.classList.remove('open');
+    if (callCancel) l._onCancel?.();
+  });
+}
+
+function cleanupOrphanedCsels() {
+  document.querySelectorAll('.csel-list').forEach(l => { if (!document.contains(l._wrap)) l.remove(); });
+}
+
+document.addEventListener('click', () => closeAllCsels(true));
+
 /* ── MODAL ── */
 function openModal(type){
   modalType=type;
   document.getElementById('modalTitle').textContent=type==='entrada'?'+ NOVA ENTRADA':'+ NOVA DESPESA';
   document.getElementById('statusPaid').textContent=type==='entrada'?'Recebido':'Pago';
   document.getElementById('fLugarWrap').style.display=type==='entrada'?'none':'';
+  document.getElementById('fValorPrevWrap').style.display=type==='entrada'?'':'none';
   document.getElementById('fCat').innerHTML=(type==='entrada'?CATS_ENTRADA:CATS_DESPESA).map(c=>`<option value="${c}">${c}</option>`).join('');
-  ['fDesc','fValor','fLugar'].forEach(id=>document.getElementById(id).value='');
+  ['fDesc','fValor','fValorPrev','fLugar'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fStatus').value='pendente';
   document.getElementById('modal').classList.add('open');
+  wrapSelect(document.getElementById('fCat'));
+  wrapSelect(document.getElementById('fStatus'));
   setTimeout(()=>document.getElementById('fDesc').focus(),100);
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
@@ -754,8 +872,10 @@ async function saveItem(){
   const btn=document.getElementById('btnSave');
   btn.disabled=true; btn.textContent='SALVANDO...';
   try{
+    const valorPrev=parseFloat(document.getElementById('fValorPrev').value);
     const payload={mes:curMonth,ano:curYear,descricao:desc,categoria:cat,valor,status};
     if(modalType==='despesa') payload.lugar=lugar;
+    if(modalType==='entrada'&&!isNaN(valorPrev)&&valorPrev>0) payload.valor_previsto=valorPrev;
     await sbInsert(modalType==='entrada'?'entradas':'despesas',payload);
     closeModal(); await loadMonth(); renderLancamentos(); invalidateYear();
     toast('✓ '+(modalType==='entrada'?'Entrada':'Despesa')+' registrada');
