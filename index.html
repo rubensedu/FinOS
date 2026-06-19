@@ -274,7 +274,7 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
   </div>
   <button class="nav-item active" onclick="goPage('dashboard')"><span class="nav-icon">⬡</span><span class="nav-label">DASHBOARD</span></button>
   <button class="nav-item" onclick="goPage('lancamentos')"><span class="nav-icon">⊞</span><span class="nav-label">LANÇAMENTOS</span></button>
-  <button class="nav-item" onclick="goPage('empresas')"><span class="nav-icon">◉</span><span class="nav-label">EMPRESAS</span></button>
+  <button class="nav-item" onclick="goPage('empresas')"><span class="nav-icon">◉</span><span class="nav-label">CONFIG</span></button>
   <div class="sidebar-bottom">
     <div class="db-status-side">
       <div class="db-dot" id="dbDot"></div>
@@ -415,6 +415,26 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
       </table>
     </div>
   </div>
+
+  <div class="panel" style="margin-top:1rem">
+    <div class="panel-header">
+      <div class="panel-title"><div class="panel-icon icon-d">◈</div>CATEGORIAS DE DESPESA</div>
+    </div>
+    <div class="empresa-add-form">
+      <input type="text" id="cNome" placeholder="Nome da categoria..." autocomplete="off">
+      <div class="color-swatch" title="Escolher cor">
+        <div class="color-preview" id="cCorPreview" style="background:#7B5EF8"></div>
+        <input type="color" id="cCor" value="#7B5EF8">
+      </div>
+      <button class="btn-add" onclick="addCategoria()">+ ADICIONAR</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>CATEGORIA</th><th>COR</th><th></th></tr></thead>
+        <tbody id="tCategorias"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 </div><!-- end .main -->
@@ -489,7 +509,15 @@ const CAT_COLORS   = {
   'Emprestado':'#60A5FA','Doado':'#34D399',
   'Salário':'#00E096','Pró-labore':'#00F0B4','Freelance':'#00C8F0','Investimentos':'#7B5EF8'
 };
-const CATS_DESPESA = ['Moradia','Alimentação','Transporte','Saúde','Educação','Lazer','Tecnologia','Vestuário','Empresa','Dívidas','Mobília','Beleza/Higiene','Marketplaces','Streamings','Emprestado','Doado','Outros'];
+const DEFAULT_CATS = [
+  {nome:'Moradia',cor:'#00C8F0'},{nome:'Alimentação',cor:'#00E096'},{nome:'Transporte',cor:'#F0A030'},
+  {nome:'Saúde',cor:'#F05060'},{nome:'Educação',cor:'#7B5EF8'},{nome:'Lazer',cor:'#D4537E'},
+  {nome:'Tecnologia',cor:'#00F0B4'},{nome:'Vestuário',cor:'#F8A95E'},{nome:'Empresa',cor:'#F0C030'},
+  {nome:'Dívidas',cor:'#C45EF0'},{nome:'Mobília',cor:'#8B6A40'},{nome:'Beleza/Higiene',cor:'#F472B6'},
+  {nome:'Marketplaces',cor:'#FB923C'},{nome:'Streamings',cor:'#A78BFA'},{nome:'Emprestado',cor:'#60A5FA'},
+  {nome:'Doado',cor:'#34D399'},{nome:'Outros',cor:'#7A9AB0'}
+];
+let CATS_DESPESA = DEFAULT_CATS.map(c=>c.nome);
 const CATS_ENTRADA = ['Salário','Pró-labore','Freelance','Investimentos','Outros'];
 
 /* ── STATE ── */
@@ -508,6 +536,14 @@ function getEmpresaColor(name) {
   return e ? e.cor : null;
 }
 
+/* ── CATEGORIAS (localStorage) ── */
+let categorias = JSON.parse(localStorage.getItem('finos_categorias') || 'null') || DEFAULT_CATS.map(c=>({...c}));
+function syncCatColors() {
+  categorias.forEach(c => { CAT_COLORS[c.nome] = c.cor; });
+  CATS_DESPESA = categorias.map(c => c.nome);
+}
+syncCatColors();
+
 /* ── NAV ── */
 function goPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -516,7 +552,7 @@ function goPage(page) {
   const idx = page === 'dashboard' ? 0 : page === 'lancamentos' ? 1 : 2;
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
   if (page === 'dashboard') renderDashboard();
-  if (page === 'empresas') renderEmpresas();
+  if (page === 'empresas') { renderEmpresas(); renderCategorias(); }
 }
 
 /* ── STATUS ── */
@@ -1092,17 +1128,26 @@ function renderEntradasPrevistas() {
     totalRow.style.display = 'none';
     return;
   }
-  let total = 0;
-  el.innerHTML = entradas.map(it => {
-    const val = it.valor_previsto != null ? +it.valor_previsto : null;
-    if (val != null) total += val;
-    const valHtml = val != null
-      ? `<span class="prev-val editable" data-id="${it.id}" data-field="valor_previsto">${fmt(val)}</span>`
-      : `<span class="prev-val empty editable" data-id="${it.id}" data-field="valor_previsto">— definir</span>`;
+
+  /* agrupa por empresa e soma valor_previsto */
+  const byEmpresa = {};
+  entradas.forEach(it => {
+    const nome = it.descricao || '—';
+    if (!byEmpresa[nome]) byEmpresa[nome] = 0;
+    if (it.valor_previsto != null) byEmpresa[nome] += +it.valor_previsto;
+  });
+
+  const total = Object.values(byEmpresa).reduce((a, v) => a + v, 0);
+
+  el.innerHTML = Object.entries(byEmpresa).map(([nome, val]) => {
+    const color = getEmpresaColor(nome) || '#00E096';
+    const valHtml = val > 0
+      ? `<span class="prev-val editable" data-empresa="${nome}">${fmt(val)}</span>`
+      : `<span class="prev-val empty editable" data-empresa="${nome}">— definir</span>`;
     return `<div class="prev-item">
       <div class="prev-item-left">
-        <span class="cat-dot" style="background:${CAT_COLORS[it.categoria]||'#888'}"></span>
-        <span class="prev-item-desc">${it.descricao}</span>
+        <span class="cat-dot" style="background:${color}"></span>
+        <span class="prev-item-desc">${nome}</span>
       </div>
       ${valHtml}
     </div>`;
@@ -1113,10 +1158,19 @@ function renderEntradasPrevistas() {
 
   el.querySelectorAll('.prev-val.editable').forEach(span => {
     span.addEventListener('dblclick', () => {
-      const { id } = span.dataset;
-      const item = entradas.find(x => x.id === id);
-      if (!item) return;
-      startEdit(span, item.valor_previsto || '', v => dbUpdate('entradas', id, { valor_previsto: v }), 'number');
+      const empresa = span.dataset.empresa;
+      const itens = entradas.filter(x => x.descricao === empresa);
+      if (!itens.length) return;
+      const current = itens.reduce((a, x) => a + (x.valor_previsto != null ? +x.valor_previsto : 0), 0);
+      startEdit(span, current || '', async v => {
+        const novo = parseFloat(v) || 0;
+        /* primeiro lançamento recebe o total; demais ficam nulos */
+        await sbUpdate('entradas', itens[0].id, { valor_previsto: novo });
+        await Promise.all(itens.slice(1).map(x => sbUpdate('entradas', x.id, { valor_previsto: null })));
+        await loadMonth();
+        renderLancamentos();
+        invalidateYear();
+      }, 'number');
     });
   });
 }
@@ -1338,13 +1392,27 @@ function renderEmpresas() {
     <tr>
       <td style="font-weight:600;letter-spacing:.05em">${e.nome}</td>
       <td>
-        <div class="empresa-row-color" style="background:${e.cor};width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.15);display:inline-block;"></div>
-        <span style="margin-left:8px;color:var(--text2);font-size:.8rem">${e.cor}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="cursor:pointer;position:relative;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.15);overflow:hidden;flex-shrink:0;display:block" title="Clique para mudar a cor">
+            <div style="position:absolute;inset:0;background:${e.cor};pointer-events:none;border-radius:7px"></div>
+            <input type="color" value="${e.cor}" style="position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);border:none;cursor:pointer;opacity:0" onchange="updateEmpresaColor(${i},this.value)">
+          </label>
+          <span style="color:var(--text2);font-size:.8rem">${e.cor}</span>
+        </div>
       </td>
       <td style="text-align:right">
         <button class="move-btn" style="color:var(--red)" onclick="deleteEmpresa(${i})" title="Remover">✕</button>
       </td>
     </tr>`).join('');
+}
+
+function updateEmpresaColor(i, cor) {
+  empresas[i].cor = cor;
+  saveEmpresas();
+  renderEmpresas();
+  renderEntradasChart();
+  renderEntradasPrevistas();
+  if (allData[dashYear]) renderEmpresaLineChart(allData[dashYear]);
 }
 
 function addEmpresa() {
@@ -1370,10 +1438,114 @@ function deleteEmpresa(i) {
 
 /* bind color swatch preview */
 (function() {
-  const picker = document.getElementById('eCor');
-  const preview = document.getElementById('eCorPreview');
-  if (picker && preview) picker.addEventListener('input', () => preview.style.background = picker.value);
+  const ep = document.getElementById('eCor'), epv = document.getElementById('eCorPreview');
+  if (ep && epv) ep.addEventListener('input', () => epv.style.background = ep.value);
+  const cp = document.getElementById('cCor'), cpv = document.getElementById('cCorPreview');
+  if (cp && cpv) cp.addEventListener('input', () => cpv.style.background = cp.value);
 })();
+
+/* ── CATEGORIAS CRUD ── */
+const CAT_PALETTE = [
+  '#00C8F0','#00E096','#F0A030','#F05060','#7B5EF8','#D4537E','#00F0B4','#F8A95E',
+  '#7A9AB0','#F0C030','#C45EF0','#8B6A40','#F472B6','#FB923C','#A78BFA','#60A5FA',
+  '#34D399','#E879F9','#F97316','#84CC16','#06B6D4','#EC4899','#10B981','#F59E0B',
+  '#EF4444','#3B82F6','#6366F1','#14B8A6','#F43F5E','#8B5CF6'
+];
+
+function nextUniqueColor(skipIdx = -1) {
+  const used = new Set(categorias.map((c, i) => i !== skipIdx ? c.cor.toLowerCase() : null).filter(Boolean));
+  return CAT_PALETTE.find(c => !used.has(c.toLowerCase())) || CAT_PALETTE[categorias.length % CAT_PALETTE.length];
+}
+
+function isColorUsed(cor, skipIdx = -1) {
+  return categorias.some((c, i) => i !== skipIdx && c.cor.toLowerCase() === cor.toLowerCase());
+}
+
+function saveCategorias() {
+  localStorage.setItem('finos_categorias', JSON.stringify(categorias));
+  syncCatColors();
+}
+
+function renderCategorias() {
+  const tbody = document.getElementById('tCategorias');
+  if (!tbody) return;
+  tbody.innerHTML = categorias.map((c, i) => `
+    <tr>
+      <td>
+        <span id="catNome${i}" ondblclick="editCatNome(${i})" style="cursor:pointer;font-weight:600;letter-spacing:.05em" title="Duplo clique para editar">${c.nome}</span>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="cursor:pointer;position:relative;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.15);overflow:hidden;flex-shrink:0;display:block">
+            <div style="position:absolute;inset:0;background:${c.cor};pointer-events:none;border-radius:7px"></div>
+            <input type="color" value="${c.cor}" style="position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);border:none;cursor:pointer;opacity:0" onchange="updateCatColor(${i},this.value)">
+          </label>
+          <span style="color:var(--text2);font-size:.8rem">${c.cor}</span>
+        </div>
+      </td>
+      <td style="text-align:right">
+        <button class="move-btn" style="color:var(--red)" onclick="deleteCategoria(${i})" title="Remover">✕</button>
+      </td>
+    </tr>`).join('');
+
+  /* atualiza picker de nova categoria para sempre sugerir cor única */
+  const sugerida = nextUniqueColor();
+  const cp = document.getElementById('cCor'), cpv = document.getElementById('cCorPreview');
+  if (cp) cp.value = sugerida;
+  if (cpv) cpv.style.background = sugerida;
+}
+
+function editCatNome(i) {
+  const span = document.getElementById('catNome' + i);
+  if (!span) return;
+  const old = categorias[i].nome;
+  const input = document.createElement('input');
+  input.value = old;
+  input.style.cssText = 'background:var(--surface2);border:1px solid var(--accent);border-radius:6px;padding:3px 8px;color:var(--text);font-family:var(--mono);font-size:13px;width:160px;outline:none';
+  span.replaceWith(input);
+  input.focus(); input.select();
+  const save = () => {
+    const novo = input.value.trim();
+    if (novo && novo !== old) { categorias[i].nome = novo; saveCategorias(); }
+    renderCategorias();
+  };
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => { if (e.key==='Enter') input.blur(); if (e.key==='Escape') { input.value=old; input.blur(); } });
+}
+
+function updateCatColor(i, cor) {
+  if (isColorUsed(cor, i)) {
+    const auto = nextUniqueColor(i);
+    toast(`⚠ Cor já em uso — substituída automaticamente`, true);
+    cor = auto;
+  }
+  categorias[i].cor = cor;
+  saveCategorias();
+  renderCategorias();
+}
+
+function addCategoria() {
+  const nome = document.getElementById('cNome').value.trim();
+  let cor = document.getElementById('cCor').value;
+  if (!nome) { toast('⚠ Informe o nome da categoria', true); return; }
+  if (categorias.find(c => c.nome.toLowerCase() === nome.toLowerCase())) { toast('⚠ Categoria já existe', true); return; }
+  if (isColorUsed(cor)) {
+    cor = nextUniqueColor();
+    toast('⚠ Cor já em uso — atribuída automaticamente', true);
+  }
+  categorias.push({ nome, cor });
+  saveCategorias();
+  document.getElementById('cNome').value = '';
+  renderCategorias();
+  toast('✓ Categoria adicionada');
+}
+
+function deleteCategoria(i) {
+  categorias.splice(i, 1);
+  saveCategorias();
+  renderCategorias();
+  toast('✓ Removida');
+}
 
 /* ── INIT ── */
 (async()=>{
