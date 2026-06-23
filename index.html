@@ -122,6 +122,12 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
 .badge.pendente{background:rgba(240,160,48,0.1);color:var(--warn);border:1px solid rgba(240,160,48,0.25);}
 .amount-in{color:var(--green);font-family:var(--mono);}
 .amount-out{color:var(--red);font-family:var(--mono);}
+.sel-cell{background:rgba(0,200,240,0.13)!important;outline:1px solid rgba(0,200,240,0.35);outline-offset:-1px;border-radius:4px;user-select:none;}
+#sumWidget{position:fixed;bottom:18px;right:18px;background:#131920;border:1px solid rgba(0,200,240,0.3);border-radius:10px;padding:7px 14px;display:none;flex-direction:column;gap:1px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.5);pointer-events:none;}
+#sumWidget .sw-label{font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1.2px;}
+#sumWidget .sw-value{font-size:14px;font-family:var(--mono);color:var(--accent2);}
+#sumWidget .sw-count{font-size:9px;font-family:var(--mono);color:var(--text3);}
+
 
 .action-row{display:flex;gap:6px;align-items:center;}
 .check-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--border2);background:none;cursor:pointer;color:var(--text3);display:inline-flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;}
@@ -260,6 +266,12 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
 <body>
 <div class="glow-orb-right"></div>
 
+<div id="sumWidget">
+  <div class="sw-label">SOMA SELECIONADA</div>
+  <div class="sw-value" id="sumWidgetVal">R$ 0,00</div>
+  <div class="sw-count" id="sumWidgetCount"></div>
+</div>
+
 <div id="loadingOverlay">
   <div class="loading-logo">FinOS</div>
   <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
@@ -304,6 +316,7 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
         <span style="display:flex;align-items:center;gap:5px;color:var(--green)"><span style="width:20px;height:2px;background:var(--green);display:inline-block;border-radius:2px"></span>ENTRADAS</span>
         <span style="display:flex;align-items:center;gap:5px;color:var(--red)"><span style="width:20px;height:2px;background:var(--red);display:inline-block;border-radius:2px"></span>DESPESAS</span>
         <span style="display:flex;align-items:center;gap:5px;color:var(--accent2)"><span style="width:20px;height:2px;background:var(--accent2);display:inline-block;border-radius:2px"></span>SALDO</span>
+        <span style="display:flex;align-items:center;gap:5px;color:#7B5EF8"><span style="width:20px;height:2px;background:#7B5EF8;display:inline-block;border-radius:2px;opacity:.8;background-image:repeating-linear-gradient(90deg,#7B5EF8 0,#7B5EF8 4px,transparent 4px,transparent 8px);background-color:transparent"></span>PREVISTO</span>
       </div>
     </div>
     <div class="chart-wrap"><div class="chart-container" style="height:220px"><canvas id="lineChart"></canvas></div></div>
@@ -646,12 +659,13 @@ async function renderDashboard() {
   ).join('');
 
   let totIn=0, totOut=0;
-  const mIns=[], mOuts=[], mSaldos=[];
+  const mIns=[], mOuts=[], mSaldos=[], mPrevs=[];
   for (let m=0; m<12; m++) {
     const md = yd[m]||{entradas:[],despesas:[]};
     const mI = md.entradas.reduce((a,i)=>a+(i.status==='pago'?+i.valor:0),0);
     const mO = md.despesas.reduce((a,i)=>a+(+i.valor),0);
-    mIns.push(mI); mOuts.push(mO); mSaldos.push(mI-mO);
+    const mP = md.entradas.reduce((a,i)=>a+(i.valor_previsto!=null?+i.valor_previsto:0),0);
+    mIns.push(mI); mOuts.push(mO); mSaldos.push(mI-mO); mPrevs.push(mP||null);
     totIn+=mI; totOut+=mO;
   }
   const totSaldo = totIn-totOut;
@@ -668,7 +682,7 @@ async function renderDashboard() {
   document.getElementById('dkSaldo').style.color  = totSaldo>=0?'var(--accent2)':'var(--red)';
   document.getElementById('dkTaxa').style.color   = taxa>=20?'var(--green)':taxa>=0?'var(--warn)':'var(--red)';
 
-  renderLineChart(mIns, mOuts, mSaldos);
+  renderLineChart(mIns, mOuts, mSaldos, mPrevs);
   renderEmpresaLineChart(yd);
   renderCatLineChart(yd);
 
@@ -838,16 +852,17 @@ function renderEmpresaLineChart(yd) {
   });
 }
 
-function renderLineChart(ins, outs, saldos) {
+function renderLineChart(ins, outs, saldos, prevs=[]) {
   const ctx = document.getElementById('lineChart').getContext('2d');
   if (lineChart) { lineChart.destroy(); lineChart=null; }
   lineChart = new Chart(ctx, {
     type:'line',
     devicePixelRatio: window.devicePixelRatio || 1,
     data:{ labels:MONTHS_SHORT, datasets:[
-      { label:'Entradas', data:ins, borderColor:'#00E096', backgroundColor:'rgba(0,224,150,0.06)', borderWidth:2, pointStyle:'circle', pointBackgroundColor:'#00E096', pointRadius:4, pointHoverRadius:6, tension:.4, fill:true },
-      { label:'Despesas', data:outs, borderColor:'#F05060', backgroundColor:'rgba(240,80,96,0.06)', borderWidth:2, pointStyle:'circle', pointBackgroundColor:'#F05060', pointRadius:4, pointHoverRadius:6, tension:.4, fill:true },
-      { label:'Saldo',    data:saldos, borderColor:'#00C8F0', backgroundColor:'rgba(0,200,240,0.04)', borderWidth:2, borderDash:[6,3], pointStyle:'circle', pointBackgroundColor:'#00C8F0', pointRadius:3, pointHoverRadius:5, tension:.4, fill:false }
+      { label:'Entradas',          data:ins,    borderColor:'#00E096', backgroundColor:'rgba(0,224,150,0.06)', borderWidth:2, pointStyle:'circle', pointBackgroundColor:'#00E096', pointRadius:4, pointHoverRadius:6, tension:.4, fill:true },
+      { label:'Despesas',          data:outs,   borderColor:'#F05060', backgroundColor:'rgba(240,80,96,0.06)', borderWidth:2, pointStyle:'circle', pointBackgroundColor:'#F05060', pointRadius:4, pointHoverRadius:6, tension:.4, fill:true },
+      { label:'Saldo',             data:saldos, borderColor:'#00C8F0', backgroundColor:'rgba(0,200,240,0.04)', borderWidth:2, borderDash:[6,3], pointStyle:'circle', pointBackgroundColor:'#00C8F0', pointRadius:3, pointHoverRadius:5, tension:.4, fill:false },
+      { label:'Entrada Prevista',  data:prevs,  borderColor:'#7B5EF8', backgroundColor:'rgba(123,94,248,0.06)', borderWidth:2, borderDash:[4,4], pointStyle:'circle', pointBackgroundColor:'#7B5EF8', pointRadius:3, pointHoverRadius:5, tension:.4, fill:false, spanGaps:true }
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
@@ -966,11 +981,12 @@ function renderEntradas() {
   tb.innerHTML=entradas.map(it=>`<tr>
     <td class="editable" data-table="entradas" data-id="${it.id}" data-field="descricao">${it.descricao}</td>
     <td class="editable" data-table="entradas" data-id="${it.id}" data-field="categoria"><span class="cat-dot" style="background:${CAT_COLORS[it.categoria]||'#888'}"></span>${it.categoria}</td>
-    <td class="editable amount-in" data-table="entradas" data-id="${it.id}" data-field="valor">${fmt(it.valor)}</td>
+    <td class="editable amount-in" data-table="entradas" data-id="${it.id}" data-field="valor" data-raw="${it.valor}">${fmt(it.valor)}</td>
     <td><span class="badge ${it.status}">${it.status==='pago'?'RECEBIDO':'PENDENTE'}</span></td>
     <td><div class="action-row">
       <button class="check-btn ${it.status==='pago'?'done':''}" data-action="toggle" data-table="entradas" data-id="${it.id}" data-status="${it.status}">✓</button>
       <button class="del-btn" data-action="del" data-table="entradas" data-id="${it.id}">×</button>
+      <button class="move-btn" data-action="copy" data-table="entradas" data-id="${it.id}" title="Copiar para o próximo mês" style="font-size:11px">⧉</button>
       <button class="move-btn" data-action="move" data-table="entradas" data-id="${it.id}" title="Mover para o próximo mês">›</button>
     </div></td>
   </tr>`).join('');
@@ -989,11 +1005,12 @@ function renderDespesas() {
       <td class="editable" data-table="despesas" data-id="${it.id}" data-field="descricao">${it.descricao}</td>
       <td class="editable" data-table="despesas" data-id="${it.id}" data-field="categoria"><span class="cat-dot" style="background:${CAT_COLORS[it.categoria]||'#888'}"></span>${it.categoria}</td>
       <td class="editable" data-table="despesas" data-id="${it.id}" data-field="lugar">${link}</td>
-      <td class="editable ${it.status==='pago'?'amount-in':'amount-out'}" data-table="despesas" data-id="${it.id}" data-field="valor">${fmt(it.valor)}</td>
+      <td class="editable ${it.status==='pago'?'amount-in':'amount-out'}" data-table="despesas" data-id="${it.id}" data-field="valor" data-raw="${it.valor}">${fmt(it.valor)}</td>
       <td><span class="badge ${it.status}">${it.status==='pago'?'PAGO':'PENDENTE'}</span></td>
       <td><div class="action-row">
         <button class="check-btn ${it.status==='pago'?'done':''}" data-action="toggle" data-table="despesas" data-id="${it.id}" data-status="${it.status}">✓</button>
         <button class="del-btn" data-action="del" data-table="despesas" data-id="${it.id}">×</button>
+        <button class="move-btn" data-action="copy" data-table="despesas" data-id="${it.id}" title="Copiar para o próximo mês" style="font-size:11px">⧉</button>
         <button class="move-btn" data-action="move" data-table="despesas" data-id="${it.id}" title="Mover para o próximo mês">›</button>
       </div></td>
     </tr>`;
@@ -1011,6 +1028,7 @@ function bindEvents(tb, table) {
     if(action==='toggle') await dbUpdate(table,id,{status:status==='pago'?'pendente':'pago'});
     if(action==='del'&&confirm('Remover este item?')) await dbDelete(table,id);
     if(action==='move') await dbMove(table,id);
+    if(action==='copy') await dbCopy(table,id);
   });
   newTb.querySelectorAll('td.editable').forEach(td=>{
     td.addEventListener('dblclick',()=>{
@@ -1041,6 +1059,18 @@ async function dbMove(table,id){
     await sbUpdate(table, id, { mes: nextMes, ano: nextAno });
     await loadMonth(); renderLancamentos(); invalidateYear();
     toast(`› Movido para ${MONTHS[nextMes]} ${nextAno}`);
+  }catch(e){ toast('⚠ '+e.message,true); }
+}
+async function dbCopy(table,id){
+  let nextMes = curMonth + 1, nextAno = curYear;
+  if(nextMes > 11){ nextMes = 0; nextAno++; }
+  try{
+    const src = (table==='entradas'?entradas:despesas).find(x=>String(x.id)===String(id));
+    if(!src) return;
+    const {id:_,created_at,...payload} = src;
+    await sbInsert(table, { ...payload, mes: nextMes, ano: nextAno, status:'pendente' });
+    await loadMonth(); renderLancamentos(); invalidateYear();
+    toast(`⧉ Copiado para ${MONTHS[nextMes]} ${nextAno}`);
   }catch(e){ toast('⚠ '+e.message,true); }
 }
 function invalidateYear(){ delete allData[curYear]; }
@@ -1546,6 +1576,67 @@ function deleteCategoria(i) {
   renderCategorias();
   toast('✓ Removida');
 }
+
+/* ── VALUE SELECTION (Excel-style) ── */
+let _selCells = new Set(), _selDragging = false, _selAnchor = null;
+
+function _allValCells() { return [...document.querySelectorAll('[data-raw]')]; }
+
+function _clearSel() {
+  _selCells.forEach(c => c.classList.remove('sel-cell'));
+  _selCells.clear();
+  _updateSumWidget();
+}
+
+function _selectRange(a, b) {
+  const all = _allValCells();
+  const ia = all.indexOf(a), ib = all.indexOf(b);
+  if (ia === -1 || ib === -1) return;
+  const [lo, hi] = ia <= ib ? [ia, ib] : [ib, ia];
+  _selCells.forEach(c => c.classList.remove('sel-cell'));
+  _selCells.clear();
+  for (let i = lo; i <= hi; i++) { _selCells.add(all[i]); all[i].classList.add('sel-cell'); }
+  _updateSumWidget();
+}
+
+function _updateSumWidget() {
+  const w = document.getElementById('sumWidget');
+  if (!w) return;
+  if (!_selCells.size) { w.style.display = 'none'; return; }
+  const sum = [..._selCells].reduce((a, c) => a + parseFloat(c.dataset.raw || 0), 0);
+  document.getElementById('sumWidgetVal').textContent = fmt(sum);
+  document.getElementById('sumWidgetCount').textContent = _selCells.size + ' valor' + (_selCells.size > 1 ? 'es' : '') + ' selecionado' + (_selCells.size > 1 ? 's' : '');
+  w.style.display = 'flex';
+}
+
+document.addEventListener('mousedown', e => {
+  const cell = e.target.closest('[data-raw]');
+  if (!cell) { _clearSel(); return; }
+  e.preventDefault();
+  _selDragging = true;
+  _selAnchor = cell;
+  if (!e.ctrlKey && !e.metaKey) {
+    _clearSel();
+    _selCells.add(cell); cell.classList.add('sel-cell');
+  } else {
+    /* Ctrl: toggle célula individual sem limpar as outras */
+    if (_selCells.has(cell)) { _selCells.delete(cell); cell.classList.remove('sel-cell'); }
+    else { _selCells.add(cell); cell.classList.add('sel-cell'); }
+  }
+  _updateSumWidget();
+});
+document.addEventListener('mouseover', e => {
+  if (!_selDragging || !_selAnchor) return;
+  const cell = e.target.closest('[data-raw]');
+  if (!cell) return;
+  if (!e.ctrlKey && !e.metaKey) {
+    _selectRange(_selAnchor, cell);
+  } else {
+    /* Ctrl + arrastar: adiciona à seleção existente sem limpar */
+    if (!_selCells.has(cell)) { _selCells.add(cell); cell.classList.add('sel-cell'); _updateSumWidget(); }
+  }
+});
+document.addEventListener('mouseup', () => { _selDragging = false; });
 
 /* ── INIT ── */
 (async()=>{
