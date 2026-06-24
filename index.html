@@ -395,7 +395,12 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
         <div class="chart-wrap"><div class="chart-container" style="height:260px"><canvas id="entradasChart"></canvas></div></div>
       </div>
       <div class="panel" style="margin-top:1.5rem">
-        <div class="panel-header"><div class="panel-title"><div class="panel-icon icon-e">↑</div>ENTRADAS PREVISTAS</div></div>
+        <div class="panel-header"><div class="panel-title"><div class="panel-icon icon-e">↑</div>ENTRADAS PREVISTAS</div><button class="btn-add" onclick="togglePrevistaForm()">+ DEFINIR</button></div>
+        <div id="previstaForm" style="display:none;padding:.75rem 1.5rem;border-bottom:1px solid var(--border);display:none;gap:8px;align-items:center;flex-wrap:wrap;">
+          <select id="pfEmpresa" style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none"></select>
+          <input id="pfValor" type="number" min="0" step="0.01" placeholder="Valor previsto..." style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none">
+          <button class="btn-add" onclick="savePrevistaForm()">SALVAR</button>
+        </div>
         <div id="previstasReport"><div class="empty-state">// SEM DADOS</div></div>
         <div class="prev-total-row" id="prevTotal" style="display:none">
           <span>TOTAL PREVISTO</span>
@@ -1149,12 +1154,52 @@ function renderEntradasChart() {
   });
 }
 
+function togglePrevistaForm() {
+  const form = document.getElementById('previstaForm');
+  const open = form.style.display === 'flex';
+  form.style.display = open ? 'none' : 'flex';
+  if (!open) {
+    const sel = document.getElementById('pfEmpresa');
+    sel.innerHTML = empresas.length
+      ? empresas.map(e => `<option value="${e.nome}">${e.nome}</option>`).join('')
+      : '<option value="">— Cadastre empresas em Config —</option>';
+    wrapSelect(sel);
+    document.getElementById('pfValor').value = '';
+    setTimeout(() => document.getElementById('pfValor').focus(), 80);
+  }
+}
+
+async function savePrevistaForm() {
+  const empresa = document.getElementById('pfEmpresa').value.trim();
+  const valor_previsto = parseFloat(document.getElementById('pfValor').value);
+  if (!empresa) { toast('⚠ Selecione uma empresa', true); return; }
+  if (!valor_previsto || valor_previsto <= 0) { toast('⚠ Informe o valor previsto', true); return; }
+
+  /* se já existe uma entrada dessa empresa no mês, apenas atualiza o valor_previsto */
+  const existente = entradas.find(e => e.descricao === empresa);
+  try {
+    if (existente) {
+      await sbUpdate('entradas', existente.id, { valor_previsto });
+    } else {
+      /* cria entrada placeholder para guardar o previsto */
+      await sbInsert('entradas', {
+        mes: curMonth, ano: curYear,
+        descricao: empresa, categoria: 'Outros',
+        valor: 0, status: 'pendente', valor_previsto
+      });
+    }
+    document.getElementById('previstaForm').style.display = 'none';
+    await loadMonth(); renderLancamentos(); invalidateYear();
+    toast('✓ Previsto salvo');
+  } catch(e) { toast('⚠ ' + e.message, true); }
+}
+
 function renderEntradasPrevistas() {
   const el = document.getElementById('previstasReport');
   const totalRow = document.getElementById('prevTotal');
   if (!el) return;
   if (!entradas.length) {
-    el.innerHTML = '<div class="empty-state">// SEM ENTRADAS</div>';
+    el.innerHTML = '<div class="empty-state">// USE "+ DEFINIR" PARA ADICIONAR PREVISTOS</div>';
     totalRow.style.display = 'none';
     return;
   }
@@ -1442,7 +1487,7 @@ function updateEmpresaColor(i, cor) {
   renderEmpresas();
   renderEntradasChart();
   renderEntradasPrevistas();
-  if (allData[dashYear]) renderEmpresaLineChart(allData[dashYear]);
+  renderDashboard();
 }
 
 function addEmpresa() {
