@@ -123,7 +123,7 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
 .amount-in{color:var(--green);font-family:var(--mono);}
 .amount-out{color:var(--red);font-family:var(--mono);}
 .sel-cell{background:rgba(0,200,240,0.13)!important;outline:1px solid rgba(0,200,240,0.35);outline-offset:-1px;border-radius:4px;user-select:none;}
-#sumWidget{position:fixed;bottom:18px;right:18px;background:#131920;border:1px solid rgba(0,200,240,0.3);border-radius:10px;padding:7px 14px;display:none;flex-direction:column;gap:1px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.5);pointer-events:none;}
+#sumWidget{position:fixed;bottom:18px;right:18px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:7px 14px;display:none;flex-direction:column;gap:1px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;}
 #sumWidget .sw-label{font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1.2px;}
 #sumWidget .sw-value{font-size:14px;font-family:var(--mono);color:var(--accent2);}
 #sumWidget .sw-count{font-size:9px;font-family:var(--mono);color:var(--text3);}
@@ -247,6 +247,53 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 
+/* ── LIGHT THEME ── */
+[data-theme="light"]{
+  --bg:#EEF2F7;--surface:#FFFFFF;--surface2:#F8FAFC;--surface3:#E2EAF2;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.16);
+  --accent:#00A88A;--accent2:#0088BB;--accent3:#6B4EEF;
+  --warn:#D97706;--text:#1A202C;--text2:#4A5568;--text3:#94A3B8;
+  --green:#059669;--red:#DC2626;
+}
+[data-theme="light"] body{background:var(--bg);}
+[data-theme="light"] body::before{background-image:linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px);}
+[data-theme="light"] body::after{background:radial-gradient(circle,rgba(0,168,138,0.08) 0%,transparent 70%);}
+[data-theme="light"] .glow-orb-right{background:radial-gradient(circle,rgba(107,78,239,0.06) 0%,transparent 70%);}
+[data-theme="light"] .sidebar-logo{border-color:rgba(0,0,0,0.12);}
+[data-theme="light"] .sidebar-logo svg{stroke:#00A88A;}
+[data-theme="light"] .sidebar-logo::before{background:linear-gradient(135deg,rgba(0,168,138,0.12),transparent);}
+[data-theme="light"] .nav-item:hover{background:rgba(0,0,0,0.04);color:var(--text2);}
+[data-theme="light"] .nav-item.active{background:rgba(0,168,138,0.1);border-right-color:var(--accent);}
+[data-theme="light"] .month-btn:hover{background:rgba(0,0,0,0.05);}
+[data-theme="light"] tbody td{border-bottom-color:rgba(0,0,0,0.04);}
+[data-theme="light"] tbody tr:hover{background:rgba(0,0,0,0.025);}
+[data-theme="light"] .top-item{border-bottom-color:rgba(0,0,0,0.05);}
+[data-theme="light"] .prev-item{border-bottom-color:rgba(0,0,0,0.04);}
+[data-theme="light"] .prev-item:hover{background:rgba(0,0,0,0.025);}
+[data-theme="light"] .month-summary-row{border-bottom-color:rgba(0,0,0,0.04);}
+[data-theme="light"] .month-summary-row:hover{background:rgba(0,0,0,0.02);}
+[data-theme="light"] .editable:hover{background:rgba(0,0,0,0.04);}
+[data-theme="light"] .tab.active{background:rgba(0,168,138,0.08);border-color:rgba(0,0,0,0.12);border-bottom-color:transparent;}
+[data-theme="light"] .year-btn.active{background:rgba(0,168,138,0.08);}
+[data-theme="light"] .badge.pago{background:rgba(5,150,105,0.1);color:var(--green);border-color:rgba(5,150,105,0.25);}
+[data-theme="light"] .badge.pendente{background:rgba(217,119,6,0.1);border-color:rgba(217,119,6,0.25);}
+[data-theme="light"] .check-btn.done{background:rgba(5,150,105,0.12);border-color:var(--green);color:var(--green);}
+[data-theme="light"] .btn-save{color:#FFFFFF;}
+[data-theme="light"] .sel-cell{background:rgba(0,136,187,0.12)!important;outline-color:rgba(0,136,187,0.35);}
+[data-theme="light"] #sumWidget{border-color:rgba(0,136,187,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.1);}
+[data-theme="light"] .csel-opt:hover{background:rgba(0,0,0,0.05);}
+[data-theme="light"] .mp-item:hover{background:rgba(0,0,0,0.05);}
+[data-theme="light"] .mp-item.active{background:rgba(0,168,138,0.08);border-color:rgba(0,0,0,0.12);}
+[data-theme="light"] .csel-list,.month-picker{box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+[data-theme="light"] .modal-backdrop{background:rgba(0,0,0,0.4);}
+[data-theme="light"] .modal::before{background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+[data-theme="light"] .metric-card:hover{border-color:rgba(0,0,0,0.18);}
+[data-theme="light"] .del-btn:hover{background:rgba(220,38,38,0.1);}
+[data-theme="light"] .move-btn:hover{background:rgba(0,136,187,0.1);color:var(--accent2);}
+[data-theme="light"] .msrow-bar{background:rgba(0,0,0,0.07);}
+[data-theme="light"] .bar-track{background:rgba(0,0,0,0.07);}
+[data-theme="light"] .saldo-track{background:rgba(220,38,38,0.15);}
+
 /* Custom Select */
 .csel{position:relative;width:100%;}
 .csel-trigger{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .2s;user-select:none;}
@@ -288,6 +335,7 @@ tbody tr:hover{background:rgba(0,240,180,0.025);}
   <button class="nav-item" onclick="goPage('lancamentos')"><span class="nav-icon">⊞</span><span class="nav-label">LANÇAMENTOS</span></button>
   <button class="nav-item" onclick="goPage('empresas')"><span class="nav-icon">◉</span><span class="nav-label">CONFIG</span></button>
   <div class="sidebar-bottom">
+    <button class="nav-item" id="themeToggle" onclick="toggleTheme()"><span class="nav-icon" id="themeIcon">○</span><span class="nav-label" id="themeLabel">MODO CLARO</span></button>
     <div class="db-status-side">
       <div class="db-dot" id="dbDot"></div>
       <span class="db-label" id="dbLabel">CONECTANDO...</span>
@@ -547,6 +595,29 @@ let entradas = [], despesas = [];
 let allData = {};
 let lineChart = null, catBarChart = null;
 
+/* ── THEME ── */
+function isLight(){ return document.documentElement.dataset.theme === 'light'; }
+function cTheme(){
+  const l = isLight();
+  return {
+    grid:    l ? 'rgba(0,0,0,0.06)'           : 'rgba(0,240,180,0.05)',
+    tick:    l ? '#94A3B8'                     : '#3D5060',
+    ttBg:    l ? '#FFFFFF'                     : '#131920',
+    ttBorder:l ? 'rgba(0,0,0,0.12)'           : 'rgba(0,240,180,0.25)',
+    ttTitle: l ? '#4A5568'                     : '#7A9AB0',
+    ttBody:  l ? '#1A202C'                     : '#E8F0F8',
+  };
+}
+function toggleTheme(){
+  const light = !isLight();
+  document.documentElement.dataset.theme = light ? 'light' : '';
+  localStorage.setItem('finos_theme', light ? 'light' : 'dark');
+  document.getElementById('themeIcon').textContent  = light ? '●' : '○';
+  document.getElementById('themeLabel').textContent = light ? 'MODO ESCURO' : 'MODO CLARO';
+  renderDashboard();
+  renderEntradasChart();
+}
+
 /* ── EMPRESAS (localStorage) ── */
 let empresas = JSON.parse(localStorage.getItem('finos_empresas') || '[]');
 function getEmpresaColor(name) {
@@ -770,8 +841,8 @@ function renderCatLineChart(yd) {
           labels: { color:'#E8F0F8', font:{family:'Space Mono',size:10}, padding:18, usePointStyle:true, pointStyleWidth:10 }
         },
         tooltip: {
-          backgroundColor:'#131920', borderColor:'rgba(0,240,180,0.25)', borderWidth:1,
-          titleColor:'#7A9AB0', bodyColor:'#E8F0F8',
+          backgroundColor:cTheme().ttBg, borderColor:cTheme().ttBorder, borderWidth:1,
+          titleColor:cTheme().ttTitle, bodyColor:cTheme().ttBody,
           titleFont:{family:'Space Mono',size:11}, bodyFont:{family:'Space Mono',size:12}, padding:12,
           filter: item => item.parsed.y != null,
           itemSort: (a,b) => b.parsed.y - a.parsed.y,
@@ -782,8 +853,8 @@ function renderCatLineChart(yd) {
         }
       },
       scales: {
-        x: { grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}} },
-        y: { grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(1)+'k'} }
+        x: { grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}} },
+        y: { grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(1)+'k'} }
       }
     }
   });
@@ -838,8 +909,8 @@ function renderEmpresaLineChart(yd) {
           labels: { color:'#E8F0F8', font:{family:'Space Mono',size:10}, padding:18, usePointStyle:true, pointStyleWidth:10 }
         },
         tooltip: {
-          backgroundColor:'#131920', borderColor:'rgba(0,240,180,0.25)', borderWidth:1,
-          titleColor:'#7A9AB0', bodyColor:'#E8F0F8',
+          backgroundColor:cTheme().ttBg, borderColor:cTheme().ttBorder, borderWidth:1,
+          titleColor:cTheme().ttTitle, bodyColor:cTheme().ttBody,
           titleFont:{family:'Space Mono',size:11}, bodyFont:{family:'Space Mono',size:12}, padding:12,
           filter: item => item.parsed.y != null,
           itemSort: (a,b) => b.parsed.y - a.parsed.y,
@@ -850,8 +921,8 @@ function renderEmpresaLineChart(yd) {
         }
       },
       scales: {
-        x: { grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}} },
-        y: { grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(1)+'k'} }
+        x: { grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}} },
+        y: { grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(1)+'k'} }
       }
     }
   });
@@ -873,8 +944,8 @@ function renderLineChart(ins, outs, saldos, prevs=[]) {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{ legend:{display:false}, tooltip:{
-        backgroundColor:'#131920', borderColor:'rgba(0,240,180,0.25)', borderWidth:1,
-        titleColor:'#7A9AB0', bodyColor:'#E8F0F8',
+        backgroundColor:cTheme().ttBg, borderColor:cTheme().ttBorder, borderWidth:1,
+        titleColor:cTheme().ttTitle, bodyColor:cTheme().ttBody,
         titleFont:{family:'Space Mono',size:11}, bodyFont:{family:'Space Mono',size:12}, padding:12,
         itemSort: (a,b) => b.parsed.y - a.parsed.y,
         callbacks:{
@@ -883,8 +954,8 @@ function renderLineChart(ins, outs, saldos, prevs=[]) {
         }
       }},
       scales:{
-        x:{ grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}} },
-        y:{ grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} }
+        x:{ grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}} },
+        y:{ grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} }
       }
     }
   });
@@ -931,14 +1002,14 @@ function renderCatBar(cats) {
       indexAxis: 'y',
       layout:{ padding:{ right:60 } },
       plugins:{ legend:{display:false}, tooltip:{
-        backgroundColor:'#131920', borderColor:'rgba(0,240,180,0.25)', borderWidth:1,
-        titleColor:'#7A9AB0', bodyColor:'#E8F0F8',
+        backgroundColor:cTheme().ttBg, borderColor:cTheme().ttBorder, borderWidth:1,
+        titleColor:cTheme().ttTitle, bodyColor:cTheme().ttBody,
         titleFont:{family:'Space Mono',size:11}, bodyFont:{family:'Space Mono',size:12}, padding:12,
         callbacks:{ label: c=>' R$ '+c.parsed.x.toLocaleString('pt-BR',{minimumFractionDigits:2}) }
       }},
       scales:{
-        x:{ grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060',font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} },
-        y:{ grid:{display:false}, ticks:{color:'#E8F0F8',font:{family:'Space Mono',size:10}}, border:{display:false} }
+        x:{ grid:{color:cTheme().grid}, ticks:{color:cTheme().tick,font:{family:'Space Mono',size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} },
+        y:{ grid:{display:false}, ticks:{color:cTheme().ttBody,font:{family:'Space Mono',size:10}}, border:{display:false} }
       }
     },
     plugins:[catDataLabelPlugin]
@@ -1139,15 +1210,15 @@ function renderEntradasChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor:'#131920', borderColor:'rgba(0,240,180,0.25)', borderWidth:1,
-          titleColor:'#7A9AB0', bodyColor:'#E8F0F8',
+          backgroundColor:cTheme().ttBg, borderColor:cTheme().ttBorder, borderWidth:1,
+          titleColor:cTheme().ttTitle, bodyColor:cTheme().ttBody,
           titleFont:{family:'Space Mono',size:11}, bodyFont:{family:'Space Mono',size:12}, padding:12,
           callbacks:{ label: c=>' '+fmt(c.parsed.y) }
         }
       },
       scales: {
-        x: { grid:{display:false}, ticks:{color:'#7A9AB0', font:{family:'Space Mono',size:10}}, border:{display:false} },
-        y: { grid:{color:'rgba(0,240,180,0.05)'}, ticks:{color:'#3D5060', font:{family:'Space Mono',size:10}, callback: v=>'R$'+(v/1000).toFixed(1)+'k'}, border:{display:false} }
+        x: { grid:{display:false}, ticks:{color:cTheme().tick, font:{family:'Space Mono',size:10}}, border:{display:false} },
+        y: { grid:{color:cTheme().grid}, ticks:{color:cTheme().tick, font:{family:'Space Mono',size:10}, callback: v=>'R$'+(v/1000).toFixed(1)+'k'}, border:{display:false} }
       }
     },
     plugins: [dataLabelPlugin]
@@ -1685,6 +1756,13 @@ document.addEventListener('mouseup', () => { _selDragging = false; });
 
 /* ── INIT ── */
 (async()=>{
+  /* restaurar tema */
+  const savedTheme = localStorage.getItem('finos_theme');
+  if (savedTheme === 'light') {
+    document.documentElement.dataset.theme = 'light';
+    document.getElementById('themeIcon').textContent  = '●';
+    document.getElementById('themeLabel').textContent = 'MODO ESCURO';
+  }
   setDbStatus('connecting');
   initMonthPicker();
   await Promise.all([loadMonth(), loadYear(dashYear)]);
