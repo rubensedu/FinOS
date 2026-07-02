@@ -1074,8 +1074,9 @@ function renderDespesas() {
   const filtered=despesaFilter==='todas'?despesas:despesas.filter(i=>i.status===despesaFilter);
   if(!filtered.length){tb.innerHTML='<tr><td colspan="6" class="empty-state">// NENHUMA DESPESA ENCONTRADA</td></tr>';return;}
   tb.innerHTML=filtered.map(it=>{
-    const link=it.lugar&&it.lugar.startsWith('http')
-      ?`<a class="link-cell" href="${it.lugar}" target="_blank">↗ LINK</a>`
+    const _urlMatch=it.lugar&&it.lugar.match(/https?:\/\/\S+/);
+    const link=_urlMatch
+      ?`<a class="link-cell" href="${_urlMatch[0]}" target="_blank">↗ LINK</a>`
       :`<span style="color:var(--text3);font-family:var(--mono);font-size:11px">${it.lugar||'—'}</span>`;
     return `<tr>
       <td class="editable" data-table="despesas" data-id="${it.id}" data-field="descricao">${it.descricao}</td>
